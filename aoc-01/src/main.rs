@@ -9,11 +9,11 @@ fn main() {
     let input = PuzzleInput::new("aoc-01/input.txt");
     let summer = DepthSummer::new(input.to_lines());
     println!(
-        "Number of increments with window [ 1 ]: {:?}",
+        "Number of depth increments with window size [ 1 ]: {:?}",
         summer.sum(1)
     );
     println!(
-        "Number of increments with window [ 3 ]: {:?}",
+        "Number of depth increments with window size [ 3 ]: {:?}",
         summer.sum(3)
     );
 }
@@ -25,7 +25,7 @@ struct DepthSummer {
 impl DepthSummer {
     fn new(lines: Lines) -> Self {
         DepthSummer {
-            lines: lines.map(|x| x.clone().parse().unwrap()).collect(),
+            lines: lines.map(|x| x.parse().unwrap()).collect(),
         }
     }
 
