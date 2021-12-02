@@ -1,6 +1,6 @@
-use aoc_core::puzzle_input::PuzzleInput;
-use std::ops::{Index, SubAssign};
 use std::str::Lines;
+
+use aoc_core::puzzle_input::PuzzleInput;
 
 fn main() {
     let input = PuzzleInput::new("aoc-02/input.txt");
@@ -69,7 +69,7 @@ impl SubNavigation {
             match step {
                 SubMovement::Forward(dist) => {
                     pos.horizontal += dist;
-                    pos.depth += (pos.aim * dist);
+                    pos.depth += pos.aim * dist;
                 }
                 SubMovement::Down(dist) => {
                     pos.aim += dist;
