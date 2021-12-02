@@ -1,9 +1,6 @@
 use aoc_core::puzzle_input::PuzzleInput;
 use std::collections::VecDeque;
-use std::ops::Range;
-use std::slice::Iter;
 use std::str::Lines;
-use std::{i64, isize};
 
 fn main() {
     let input = PuzzleInput::new("aoc-01/input.txt");
@@ -34,7 +31,7 @@ impl DepthSummer {
         // Create a vec with enough space for the previous window and the current window.
         let mut window: VecDeque<Option<&i32>> = VecDeque::from(vec![None; window_size + 1]);
         // Iterate over every line in the input.
-        for (i, val) in self.lines.iter().enumerate() {
+        for val in self.lines.iter() {
             window.pop_front(); // Remove the first element from the window.
             window.push_back(Some(val)); // And add the current element to the window.
             if window.iter().any(|x| x.is_none()) {
