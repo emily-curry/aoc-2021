@@ -1,3 +1,5 @@
+pub mod bitmap;
+pub mod bitmap_list;
 pub mod puzzle_input;
 
 #[cfg(test)]
