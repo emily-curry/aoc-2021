@@ -1,4 +1,4 @@
-use std::ops::Not;
+use std::ops::{BitAnd, Not};
 
 #[derive(Debug, Clone, Copy)]
 pub struct Bitmap {
@@ -7,8 +7,12 @@ pub struct Bitmap {
 }
 
 impl Bitmap {
-    pub fn new(value: u32, bitmap_size: usize) -> Self {
-        Bitmap { value, bitmap_size }
+    pub const fn new(value: u32, bitmap_size: usize) -> Self {
+        let masked_value = value & Self::calc_mask(bitmap_size as u32);
+        Bitmap {
+            value: masked_value,
+            bitmap_size,
+        }
     }
 
     pub fn at_pos(&self, pos: usize) -> bool {
@@ -27,6 +31,19 @@ impl Bitmap {
         if current != value {
             self.value = self.value ^ (1 << pos);
         }
+    }
+
+    /// Returns an integer mask that can be applied to the value with BitAnd, setting all values outside the bitmap_size to 0.
+    const fn calc_mask(bitmap_size: u32) -> u32 {
+        match bitmap_size {
+            0..=31 => 2u32.pow(bitmap_size) - 1,
+            _ => 4294967295u32, // 2u32.pow(32) would overflow, everything else is invalid
+        }
+    }
+
+    /// Returns an integer mask that can be applied to the value with BitAnd, setting all values outside the bitmap_size to 0.
+    fn get_mask(&self) -> u32 {
+        Bitmap::calc_mask(self.bitmap_size as u32)
     }
 }
 
@@ -59,9 +76,27 @@ impl Not for Bitmap {
 
     fn not(self) -> Self::Output {
         let inv = !self.value;
-        let mask = 2u32.pow(self.bitmap_size as u32) - 1;
-        let val = inv & mask;
-        Bitmap::new(val, self.bitmap_size)
+        Bitmap::new(inv, self.bitmap_size)
+    }
+}
+
+impl BitAnd for Bitmap {
+    type Output = Bitmap;
+
+    fn bitand(self, rhs: Self) -> Self::Output {
+        let size = if self.bitmap_size >= rhs.bitmap_size {
+            self.bitmap_size
+        } else {
+            rhs.bitmap_size
+        };
+        let val = self.value & rhs.value;
+        Bitmap::new(val, size)
+    }
+}
+
+impl PartialEq<Self> for Bitmap {
+    fn eq(&self, other: &Self) -> bool {
+        self.value == other.value
     }
 }
 
@@ -72,6 +107,8 @@ mod tests {
     #[test]
     fn can_construct_without_panic() {
         let _bits: Bitmap = 1982u32.into();
+        let bits2: Bitmap = 4294967295u32.into();
+        assert_eq!(bits2.value, 4294967295u32);
     }
 
     #[test]
@@ -114,6 +151,13 @@ mod tests {
         assert_eq!(bitmap.at_pos(0), false);
         assert_eq!(bitmap.value, 2);
 
+        let mut bitmap2 = Bitmap::new(4294967295u32, 32);
+        assert_eq!(bitmap2.value, 4_294_967_295u32);
+        bitmap2.set_pos(0, false);
+        assert_eq!(bitmap2.value, 4_294_967_294u32);
+        bitmap2.set_pos(31, false);
+        assert_eq!(bitmap2.value, 2_147_483_646u32);
+
         // Set to same as existing value, should remain unchanged.
         bitmap.set_pos(1, true);
         assert_eq!(bitmap.at_pos(0), false);
@@ -155,5 +199,13 @@ mod tests {
         assert_eq!(flipped.at_pos(0), true);
         // assert ! doesn't flip bits outside size
         assert_eq!(flipped.at_pos(2), false);
+    }
+
+    #[test]
+    fn bitand_op() {
+        let bitmap1 = Bitmap::new(6, 4);
+        let bitmap2 = Bitmap::new(10, 4);
+        let bitmap3 = bitmap1 & bitmap2;
+        assert_eq!(bitmap3.value, 2);
     }
 }
