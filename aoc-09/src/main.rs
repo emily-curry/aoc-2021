@@ -55,7 +55,7 @@ impl DepthMap {
     fn find_basin(&self, point: IntMapPoint) -> Basin {
         let mut basin = HashSet::new();
         basin.insert(point);
-        for adj in self.get_adjacent_points(&point) {
+        for adj in self.inner.get_adjacent_points_cardinal(point.0, point.1) {
             // If the adjacent point is greater than the current point, the adjacent point's value is not 9, and the basin doesn't already contain that point,
             // then add that point and all points adjacent to it that meet the above criteria (recursively) to the basin.
             if adj.2 > point.2 && adj.2 != 9 && !basin.contains(&adj) {
@@ -67,25 +67,8 @@ impl DepthMap {
     }
 
     fn is_local_minimum(&self, point: &IntMapPoint) -> bool {
-        let points = self.get_adjacent_points(point);
+        let points = self.inner.get_adjacent_points_cardinal(point.0, point.1);
         points.iter().all(|adj| point.2 < adj.2)
-    }
-
-    fn get_adjacent_points(&self, point: &IntMapPoint) -> Vec<IntMapPoint> {
-        let mut result = Vec::new();
-        if point.0 > 0 {
-            result.push(self.inner.get_point(point.0 - 1, point.1));
-        }
-        if point.0 < 99 {
-            result.push(self.inner.get_point(point.0 + 1, point.1));
-        }
-        if point.1 > 0 {
-            result.push(self.inner.get_point(point.0, point.1 - 1));
-        }
-        if point.1 < 99 {
-            result.push(self.inner.get_point(point.0, point.1 + 1));
-        }
-        result
     }
 }
 

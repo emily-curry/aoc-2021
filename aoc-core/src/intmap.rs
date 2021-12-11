@@ -46,6 +46,57 @@ impl IntMap {
             .enumerate()
             .flat_map(|c| c.1.iter().enumerate().map(move |r| (r.0, c.0, *r.1)))
     }
+
+    /// Returns a list of all adjacent points, excluding those that would be out-of-bounds.
+    pub fn get_adjacent_points(&self, x: usize, y: usize) -> Vec<IntMapPoint> {
+        let mut result = self.get_adjacent_points_cardinal(x, y);
+        result.append(&mut self.get_adjacent_points_diagonal(x, y));
+        result
+    }
+
+    /// Returns a list of all adjacent points in cardinal directions, excluding those that would be out-of-bounds.
+    pub fn get_adjacent_points_cardinal(&self, x: usize, y: usize) -> Vec<IntMapPoint> {
+        let mut result = Vec::new();
+        // Left
+        if x > 0 {
+            result.push(self.get_point(x - 1, y));
+        }
+        // Right
+        if x < self.get_width() - 1 {
+            result.push(self.get_point(x + 1, y));
+        }
+        // Up
+        if y > 0 {
+            result.push(self.get_point(x, y - 1));
+        }
+        // Down
+        if y < self.get_height() - 1 {
+            result.push(self.get_point(x, y + 1));
+        }
+        result
+    }
+
+    /// Returns a list of all adjacent points in diagonal directions, excluding those that would be out-of-bounds.
+    pub fn get_adjacent_points_diagonal(&self, x: usize, y: usize) -> Vec<IntMapPoint> {
+        let mut result = Vec::new();
+        // Top-left
+        if x > 0 && y > 0 {
+            result.push(self.get_point(x - 1, y - 1));
+        }
+        // Top-right
+        if x < self.get_width() - 1 && y > 0 {
+            result.push(self.get_point(x + 1, y - 1));
+        }
+        // Bottom-left
+        if x > 0 && y < self.get_height() - 1 {
+            result.push(self.get_point(x - 1, y + 1));
+        }
+        // Bottom-right
+        if x < self.get_width() - 1 && y < self.get_height() - 1 {
+            result.push(self.get_point(x + 1, y + 1));
+        }
+        result
+    }
 }
 
 impl<'a> From<Lines<'a>> for IntMap {
