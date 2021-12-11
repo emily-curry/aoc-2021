@@ -1,3 +1,4 @@
+use aoc_core::intmap::{IntMap, IntMapPoint};
 use aoc_core::puzzle_input::PuzzleInput;
 use colored::*;
 use std::collections::HashSet;
@@ -12,35 +13,32 @@ fn main() {
     let risk_levels: Vec<u8> = low_points.iter().map(|x| x.2 + 1).collect();
     let risk_level_sum = risk_levels.iter().fold(0u32, |acc, val| acc + *val as u32);
     println!("Sum of risk levels at low points: {}", risk_level_sum);
+    debug_assert_eq!(risk_level_sum, 480);
 
     let mut basins = depth_map.get_basins();
     basins.sort_by(|a, b| b.len().cmp(&a.len()));
     let basin_product = basins[0].len() * basins[1].len() * basins[2].len();
     println!("Product of 3 largest basins: {}", basin_product);
+    debug_assert_eq!(basin_product, 1045660);
 }
 
-type Point = (usize, usize, u8);
-
-type Basin = HashSet<Point>;
+type Basin = HashSet<IntMapPoint>;
 
 struct DepthMap {
-    map: [[u8; 100]; 100],
+    inner: IntMap,
 }
 
 impl DepthMap {
-    pub fn new(map: [[u8; 100]; 100]) -> Self {
-        DepthMap { map }
+    pub fn new(map: IntMap) -> Self {
+        DepthMap { inner: map }
     }
 
-    pub fn get_local_minimums(&self) -> Vec<Point> {
+    pub fn get_local_minimums(&self) -> Vec<IntMapPoint> {
         let mut result = Vec::new();
 
-        for (x, col) in self.map.iter().enumerate() {
-            for (y, value) in col.iter().enumerate() {
-                let point = (x, y, *value);
-                if self.is_local_minimum(&point) {
-                    result.push(point);
-                }
+        for point in self.inner.iter_points() {
+            if self.is_local_minimum(&point) {
+                result.push(point);
             }
         }
 
@@ -54,7 +52,7 @@ impl DepthMap {
             .collect()
     }
 
-    fn find_basin(&self, point: Point) -> Basin {
+    fn find_basin(&self, point: IntMapPoint) -> Basin {
         let mut basin = HashSet::new();
         basin.insert(point);
         for adj in self.get_adjacent_points(&point) {
@@ -68,24 +66,24 @@ impl DepthMap {
         basin
     }
 
-    fn is_local_minimum(&self, point: &Point) -> bool {
+    fn is_local_minimum(&self, point: &IntMapPoint) -> bool {
         let points = self.get_adjacent_points(point);
         points.iter().all(|adj| point.2 < adj.2)
     }
 
-    fn get_adjacent_points(&self, point: &Point) -> Vec<Point> {
+    fn get_adjacent_points(&self, point: &IntMapPoint) -> Vec<IntMapPoint> {
         let mut result = Vec::new();
         if point.0 > 0 {
-            result.push((point.0 - 1, point.1, self.map[point.0 - 1][point.1]));
+            result.push(self.inner.get_point(point.0 - 1, point.1));
         }
         if point.0 < 99 {
-            result.push((point.0 + 1, point.1, self.map[point.0 + 1][point.1]));
+            result.push(self.inner.get_point(point.0 + 1, point.1));
         }
         if point.1 > 0 {
-            result.push((point.0, point.1 - 1, self.map[point.0][point.1 - 1]));
+            result.push(self.inner.get_point(point.0, point.1 - 1));
         }
         if point.1 < 99 {
-            result.push((point.0, point.1 + 1, self.map[point.0][point.1 + 1]));
+            result.push(self.inner.get_point(point.0, point.1 + 1));
         }
         result
     }
@@ -93,34 +91,28 @@ impl DepthMap {
 
 impl<'a> From<Lines<'a>> for DepthMap {
     fn from(input: Lines) -> Self {
-        let mut map = [[0u8; 100]; 100];
-        for (y, line) in input.enumerate() {
-            for (x, value) in line.chars().enumerate() {
-                let parsed: u8 = value.to_digit(10).expect("Could not parse!") as u8;
-                map[x][y] = parsed;
-            }
-        }
-        DepthMap::new(map)
+        let intmap = IntMap::from(input);
+        DepthMap::new(intmap)
     }
 }
 
 impl Display for DepthMap {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         let basins = self.get_basins();
-        for y in 0..100 {
-            for x in 0..100 {
-                let char = &self.map[x][y];
-                let point = (x, y, *char);
-                let mut char_str: ColoredString = format!("{}", char).as_str().into();
-                if !basins.iter().any(|basin| basin.contains(&point)) {
-                    char_str = char_str.bold().on_bright_white();
-                }
-                if self.is_local_minimum(&point) {
-                    char_str = char_str.red();
-                }
-                f.write_str(format!("{}", char_str).as_str())?;
+        let mut y = 0usize;
+        for point in self.inner.iter_points() {
+            if point.1 != y {
+                f.write_str("\n")?;
+                y = point.1;
             }
-            f.write_str("\n")?;
+            let mut char_str: ColoredString = format!("{}", point.2).as_str().into();
+            if !basins.iter().any(|basin| basin.contains(&point)) {
+                char_str = char_str.bold().on_bright_white();
+            }
+            if self.is_local_minimum(&point) {
+                char_str = char_str.red();
+            }
+            f.write_str(format!("{}", char_str).as_str())?;
         }
         Ok(())
     }
