@@ -1,6 +1,6 @@
 use aoc_core::puzzle_input::PuzzleInput;
 use std::cmp::Ordering;
-use std::collections::{HashMap, HashSet, VecDeque};
+use std::collections::{HashMap, HashSet};
 use std::fmt::{Debug, Display, Formatter};
 use std::str::Lines;
 
