@@ -4,6 +4,7 @@ use std::str::Lines;
 pub type IntMapPoint = (usize, usize, u8);
 
 /// Represents a grid of single-digit integers.
+#[derive(Debug, Clone)]
 pub struct IntMap {
     /// The grid of integers, where the index of the vector represents the y position,
     /// and the value is a vector representing a row of integers where the index is the x position.
