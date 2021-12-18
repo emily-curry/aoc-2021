@@ -1,6 +1,5 @@
-use aoc_core::bitmap::Bitmap;
+use aoc_core::bit::bitmap::Bitmap;
 use aoc_core::puzzle_input::PuzzleInput;
-use std::borrow::{Borrow, BorrowMut};
 use std::fmt::{Debug, Display, Formatter};
 use std::str::Lines;
 
@@ -24,19 +23,23 @@ fn main() {
     );
 }
 
+const fn new_const(value: u32, bitmap_size: usize) -> Bitmap<u32> {
+    Bitmap::new_const(value, bitmap_size)
+}
+
 static WINNING_BOARDS: [Bitmap; 12] = {
-    let row0 = Bitmap::new(31 << 0, 25);
-    let col0 = Bitmap::new(1_082_401 << 0, 25);
-    let row1 = Bitmap::new(31 << 5, 25);
-    let col1 = Bitmap::new(1_082_401 << 1, 25);
-    let row2 = Bitmap::new(31 << 10, 25);
-    let col2 = Bitmap::new(1_082_401 << 2, 25);
-    let row3 = Bitmap::new(31 << 15, 25);
-    let col3 = Bitmap::new(1_082_401 << 3, 25);
-    let row4 = Bitmap::new(31 << 20, 25);
-    let col4 = Bitmap::new(1_082_401 << 4, 25);
-    let left_down_diag = Bitmap::new(17_043_521u32, 25);
-    let right_down_diag = Bitmap::new(1_118_480u32, 25);
+    let row0 = new_const(31 << 0, 25);
+    let col0 = new_const(1_082_401 << 0, 25);
+    let row1 = new_const(31 << 5, 25);
+    let col1 = new_const(1_082_401 << 1, 25);
+    let row2 = new_const(31 << 10, 25);
+    let col2 = new_const(1_082_401 << 2, 25);
+    let row3 = new_const(31 << 15, 25);
+    let col3 = new_const(1_082_401 << 3, 25);
+    let row4 = new_const(31 << 20, 25);
+    let col4 = new_const(1_082_401 << 4, 25);
+    let left_down_diag = new_const(17_043_521u32, 25);
+    let right_down_diag = new_const(1_118_480u32, 25);
     let boards: [Bitmap; 12] = [
         row0,
         col0,
@@ -165,7 +168,7 @@ impl BingoBoard {
             .enumerate()
             .find(|(_, val)| **val == number);
         if let Some(item) = found {
-            self.marked.set_pos(item.0, true);
+            self.marked.set(item.0, true);
         }
     }
 
@@ -181,7 +184,7 @@ impl BingoBoard {
         self.board
             .iter()
             .enumerate()
-            .fold(0u32, |acc, (index, val)| match self.marked.at_pos(index) {
+            .fold(0u32, |acc, (index, val)| match self.marked.get(index) {
                 false => acc + *val as u32,
                 true => acc,
             })
@@ -216,7 +219,7 @@ impl Display for BingoBoard {
             .enumerate()
             .fold(String::new(), |acc, (index, val)| {
                 let mut item = format!("{:^4}", format!("{:02}", val));
-                if self.marked.at_pos(index) {
+                if self.marked.get(index) {
                     item.replace_range(0..1, ">");
                     item.replace_range(3..4, "<");
                 }

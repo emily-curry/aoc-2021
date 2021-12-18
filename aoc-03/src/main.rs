@@ -1,5 +1,5 @@
-use aoc_core::bitmap::Bitmap;
-use aoc_core::bitmap_list::BitmapList;
+use aoc_core::bit::bitmap::Bitmap;
+use aoc_core::bit::bitmap_list::BitmapList;
 use aoc_core::puzzle_input::PuzzleInput;
 
 fn main() {
@@ -43,7 +43,7 @@ impl SubmarineComputer {
         let mut bit_counts = vec![0u32; bitmap_list.bitmap_size];
         for bitmap in &bitmap_list.list {
             for pos in 0..bitmap_list.bitmap_size {
-                if bitmap.at_pos(pos) {
+                if bitmap.get(pos) {
                     bit_counts[pos] += 1;
                 }
             }
@@ -57,7 +57,7 @@ impl SubmarineComputer {
         let mut bitmap = Bitmap::new(0, bit_counts.len());
         for (index, count) in bit_counts.iter().enumerate() {
             if test(*count) == true {
-                bitmap.set_pos(index, true);
+                bitmap.set(index, true);
             }
         }
         bitmap
@@ -87,11 +87,11 @@ impl SubmarineComputer {
         let bitmap_ref = SubmarineComputer::calc_count_bitmap(&bit_counts, |count| {
             test(count, bitmap_list.list.len() as u32)
         });
-        let ref_value = bitmap_ref.at_pos(pos);
+        let ref_value = bitmap_ref.get(pos);
         let filtered: Vec<Bitmap> = bitmap_list
             .list
             .iter()
-            .filter(|b| b.at_pos(pos) == ref_value)
+            .filter(|b| b.get(pos) == ref_value)
             .map(|x| x.clone())
             .collect();
         if filtered.len() == 1 {

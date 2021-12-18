@@ -1,4 +1,4 @@
-use crate::bitmap::Bitmap;
+use crate::bit::bitmap::Bitmap;
 use std::str::Lines;
 
 #[derive(Debug)]
@@ -29,7 +29,7 @@ impl<'a> From<Lines<'a>> for BitmapList {
 
 #[cfg(test)]
 mod tests {
-    use crate::bitmap_list::BitmapList;
+    use crate::bit::bitmap_list::BitmapList;
     use crate::puzzle_input::PuzzleInput;
 
     #[test]

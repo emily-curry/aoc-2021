@@ -1,5 +1,4 @@
-pub mod bitmap;
-pub mod bitmap_list;
+pub mod bit;
 pub mod intmap;
 pub mod puzzle_input;
 
