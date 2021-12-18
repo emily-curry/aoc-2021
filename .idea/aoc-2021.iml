@@ -19,6 +19,7 @@
       <sourceFolder url="file://$MODULE_DIR$/aoc-14/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/aoc-15/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/aoc-16/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/aoc-17/src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
     </content>
     <orderEntry type="inheritedJdk" />
