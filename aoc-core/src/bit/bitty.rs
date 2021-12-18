@@ -1,7 +1,8 @@
 use std::hash::Hash;
 use std::ops::{Add, BitAnd, BitOr, BitXor, Not, Rem, Shl, Shr, Sub};
 
-pub trait Bitmappable:
+/// A generic representation of a uint that has all the necessary operators for bit math.
+pub trait Bitty:
     Copy
     + Clone
     + Eq
@@ -28,7 +29,7 @@ pub trait Bitmappable:
     fn pow(self, rhs: u32) -> Self;
 }
 
-impl Bitmappable for u32 {
+impl Bitty for u32 {
     fn zero() -> Self {
         0
     }
@@ -50,7 +51,7 @@ impl Bitmappable for u32 {
     }
 }
 
-impl Bitmappable for u16 {
+impl Bitty for u16 {
     fn zero() -> Self {
         0
     }
@@ -72,7 +73,7 @@ impl Bitmappable for u16 {
     }
 }
 
-impl Bitmappable for u8 {
+impl Bitty for u8 {
     fn zero() -> Self {
         0
     }

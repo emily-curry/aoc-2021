@@ -1,5 +1,7 @@
-use crate::bit::bitmappable::Bitmappable;
-use std::ops::{BitAnd, Not};
+use std::fmt::{Display, Formatter};
+use std::ops::{BitAnd, Index, Not};
+
+use crate::bit::bitty::Bitty;
 
 #[derive(Debug, Clone, Copy)]
 pub struct Bitmap<B = u32> {
@@ -26,7 +28,7 @@ impl Bitmap<u32> {
     }
 }
 
-impl<B: Bitmappable> Bitmap<B> {
+impl<B: Bitty> Bitmap<B> {
     pub fn new(value: B, bitmap_size: usize) -> Self {
         if bitmap_size > B::max_bits() {
             panic!("Out of range bitmap_size!")
@@ -49,14 +51,7 @@ impl<B: Bitmappable> Bitmap<B> {
     }
 
     pub fn get(&self, pos: usize) -> bool {
-        let calc = (self.value >> pos) & B::one();
-        if calc == B::one() {
-            true
-        } else if calc == B::zero() {
-            false
-        } else {
-            panic!("Neither true nor false!")
-        }
+        self[pos]
     }
 
     pub fn set(&mut self, pos: usize, value: bool) {
@@ -70,7 +65,22 @@ impl<B: Bitmappable> Bitmap<B> {
     }
 }
 
-impl<B: Bitmappable> From<B> for Bitmap<B> {
+impl<B: Bitty> Index<usize> for Bitmap<B> {
+    type Output = bool;
+
+    fn index(&self, index: usize) -> &Self::Output {
+        let calc = (self.value >> index) & B::one();
+        if calc == B::one() {
+            &true
+        } else if calc == B::zero() {
+            &false
+        } else {
+            panic!("Neither true nor false!")
+        }
+    }
+}
+
+impl<B: Bitty> From<B> for Bitmap<B> {
     fn from(int: B) -> Self {
         Bitmap::new(int, B::max_bits())
     }
@@ -88,7 +98,7 @@ impl From<Bitmap<u16>> for u16 {
     }
 }
 
-impl<B: Bitmappable> Not for Bitmap<B> {
+impl<B: Bitty> Not for Bitmap<B> {
     type Output = Bitmap<B>;
 
     fn not(self) -> Self::Output {
@@ -97,7 +107,7 @@ impl<B: Bitmappable> Not for Bitmap<B> {
     }
 }
 
-impl<B: Bitmappable> BitAnd for Bitmap<B> {
+impl<B: Bitty> BitAnd for Bitmap<B> {
     type Output = Bitmap<B>;
 
     fn bitand(self, rhs: Self) -> Self::Output {
@@ -111,9 +121,23 @@ impl<B: Bitmappable> BitAnd for Bitmap<B> {
     }
 }
 
-impl<B: Bitmappable> PartialEq<Self> for Bitmap<B> {
+impl<B: Bitty> PartialEq<Self> for Bitmap<B> {
     fn eq(&self, other: &Self) -> bool {
         self.value == other.value
+    }
+}
+
+impl<B: Bitty> Display for Bitmap<B> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        for i in 0..B::max_bits() {
+            if i < self.bitmap_size {
+                let value = if self[i] { "✅️" } else { "⬛️" };
+                f.write_str(value)?;
+            } else {
+                f.write_str("➖️")?;
+            }
+        }
+        Ok(())
     }
 }
 
@@ -224,5 +248,15 @@ mod tests {
         let bitmap2 = Bitmap::new(10u32, 4);
         let bitmap3 = bitmap1 & bitmap2;
         assert_eq!(bitmap3.value, 2);
+    }
+
+    #[test]
+    fn display() {
+        let bitmap1 = Bitmap::new(6u32, 4);
+        println!("{}", bitmap1);
+        let bitmap2 = Bitmap::new(2893u16, 14);
+        println!("{}", bitmap2);
+        let bitmap3 = Bitmap::new(218u8, 8);
+        println!("{}", bitmap3);
     }
 }
