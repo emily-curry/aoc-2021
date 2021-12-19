@@ -143,7 +143,7 @@ mod tests {
 
     #[test]
     fn can_construct() {
-        let map = construct(0u8);
+        let _map = construct(0u8);
         assert!(true, "Didn't panic!")
     }
 
